@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "dev": "dotenv -e .env ts-node src/server.ts",
-    "build": "bunchee"
+    "build:api": "bunchee",
+    "build": "bunchee ./src/server.ts -f cjs -o ./public/index.js"
   },
   "exports": {
     "./server": "./api/index.js"
