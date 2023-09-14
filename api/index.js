@@ -157,7 +157,6 @@ app.get('/api/auth/github/callback', passport__default.default.authenticate('git
 }), function(req, res) {
     const accessToken = req.user.accessToken;
     res.cookie('accessToken', accessToken);
-    res.redirect(`${req.baseUrl}`);
 });
 app.get('/api', /*#__PURE__*/ _async_to_generator(function*(req, res) {
     const accessToken = req.cookies.accessToken;
