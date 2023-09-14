@@ -10,6 +10,18 @@ interface CustomUser extends Profile {
   accessToken: string
 }
 
+const app = express()
+app.use(
+  session({
+    secret: process.env.EXPRESS_SESSION_SECRET as string,
+    resave: false,
+    saveUninitialized: false,
+  })
+)
+app.use(cookieParser())
+app.use(passport.initialize())
+app.use(passport.session())
+
 passport.serializeUser(function (user, done) {
   done(null, user)
 })
@@ -23,7 +35,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      callbackURL: `${process.env.BASE_URL}/api/auth/github/callback`,
+      callbackURL: '/api/auth/github/callback',
     },
     (accessToken: string, _refreshToken: string, profile: any, done: any) => {
       profile.accessToken = accessToken
@@ -31,18 +43,6 @@ passport.use(
     }
   )
 )
-
-const app = express()
-app.use(
-  session({
-    secret: process.env.EXPRESS_SESSION_SECRET as string,
-    resave: false,
-    saveUninitialized: false,
-  })
-)
-app.use(cookieParser())
-app.use(passport.initialize())
-app.use(passport.session())
 
 app.get(
   '/api/auth/github',
@@ -55,7 +55,7 @@ app.get(
   function (req, res) {
     const accessToken = (req.user as CustomUser).accessToken
     res.cookie('accessToken', accessToken)
-    res.redirect(`${process.env.BASE_URL}`)
+    res.redirect(`${req.baseUrl}`)
   }
 )
 
