@@ -4,11 +4,11 @@
   "description": "",
   "scripts": {
     "dev": "dotenv -e .env ts-node src/server.ts",
-    "build:api": "bunchee",
-    "build": "bunchee ./src/server.ts -f cjs -o ./public/index.js"
+    "build": "bunchee",
+    "start": "dotenv -e .env node dist/server.js"
   },
   "exports": {
-    "./server": "./api/index.js"
+    "./server": "./dist/server.js"
   },
   "license": "MIT",
   "dependencies": {

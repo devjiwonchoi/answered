@@ -23,7 +23,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      callbackURL: `${process.env.BASE_URL}/api/auth/github/callback`,
+      callbackURL: `${process.env.BASE_URL}/auth/github/callback`,
     },
     (accessToken: string, _refreshToken: string, profile: any, done: any) => {
       profile.accessToken = accessToken
@@ -43,16 +43,15 @@ app.use(
 app.use(cookieParser())
 app.use(passport.initialize())
 app.use(passport.session())
-app.use(express.static('public'))
 
 app.get(
-  '/api/auth/github',
+  '/auth/github',
   passport.authenticate('github', { scope: ['user:email', 'repo:public_repo'] })
 )
 
 app.get(
-  '/api/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/api' }),
+  '/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '' }),
   function (req, res) {
     const accessToken = (req.user as CustomUser).accessToken
     res.cookie('accessToken', accessToken)
@@ -60,10 +59,10 @@ app.get(
   }
 )
 
-app.get('/api', async (req, res) => {
+app.get('/', async (req, res) => {
   const accessToken = req.cookies.accessToken
   if (!accessToken) {
-    res.redirect('/api/auth/github')
+    res.redirect('/auth/github')
     return
   }
   try {
