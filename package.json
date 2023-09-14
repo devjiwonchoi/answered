@@ -2,13 +2,11 @@
   "name": "answered",
   "version": "0.0.0",
   "description": "",
+  "main": "api/index.js",
   "scripts": {
-    "dev": "dotenv -e .env ts-node src/server.ts",
+    "dev": "dotenv -e .env ts-node src/index.ts",
     "build": "bunchee",
-    "start": "dotenv -e .env node dist/server.js"
-  },
-  "exports": {
-    "./server": "./dist/server.js"
+    "start": "dotenv -e .env node api/index.js"
   },
   "license": "MIT",
   "dependencies": {

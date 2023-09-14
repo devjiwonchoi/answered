@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { type Express } from 'express'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import axios from 'axios'
@@ -86,4 +86,4 @@ app.get('/api', async (req, res) => {
 
 app.listen({ port: 8000 })
 
-module.exports = app
+export default app as Express

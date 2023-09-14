@@ -1,20 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "dis/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "dist/**"
-        ]
-      }
-    }
-  ],
   "rewrites": [
     {
-      "source": "/",
-      "destination": "https://github.com/devjiwonchoi/answered"
+      "source": "/api/(.*)",
+      "destination": "/api"
     }
   ]
 }
