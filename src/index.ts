@@ -35,7 +35,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      callbackURL: '/api/auth/github/callback',
+      callbackURL: `${process.env.VERCEL_EXPRESS_URL}/api/auth/github/callback`,
     },
     (accessToken: string, _refreshToken: string, profile: any, done: any) => {
       profile.accessToken = accessToken
