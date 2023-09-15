@@ -55,6 +55,7 @@ app.get(
   function (req, res) {
     const accessToken = (req.user as CustomUser).accessToken
     res.cookie('accessToken', accessToken)
+    res.redirect('/api')
   }
 )
 
