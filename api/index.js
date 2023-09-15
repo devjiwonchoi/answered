@@ -118,35 +118,43 @@ function _async_to_generator(fn) {
 }
 const accessToken = process.env.GITHUB_ACCESS_TOKEN;
 const app = express__default.default();
-app.get('/', /*#__PURE__*/ _async_to_generator(function*(_req, res) {
+app.get(
+  '/api',
+  /*#__PURE__*/ _async_to_generator(function* (_req, res) {
     if (!accessToken) {
-        res.redirect('/no-access-token');
-        return;
+      res.redirect('/no-access-token')
+      return
     }
     try {
-        const response = yield axios__default.default.post('https://api.github.com/graphql', {
-            query
-        }, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
-        const data = handleData(response.data);
-        const htmlString = generateHTMLString(data);
-        res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-        res.send(htmlString);
+      const response = yield axios__default.default.post(
+        'https://api.github.com/graphql',
+        {
+          query,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      )
+      const data = handleData(response.data)
+      const htmlString = generateHTMLString(data)
+      res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
+      res.send(htmlString)
     } catch (error) {
-        res.json({
-            error
-        });
+      res.json({
+        error,
+      })
     }
-}));
-app.get('/no-access-token', (_req, res)=>{
-    res.status(401).json({
-        error: 'Missing access token',
-        message: 'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env'
-    });
-});
+  })
+)
+app.get('/api/no-access-token', (_req, res) => {
+  res.status(401).json({
+    error: 'Missing access token',
+    message:
+      'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env',
+  })
+})
 app.listen({
     port: 8000
 });
