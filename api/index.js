@@ -1,19 +1,12 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var express = require('express');
-var session = require('express-session');
-var cookieParser = require('cookie-parser');
 var axios = require('axios');
-var passport = require('passport');
-var passportGithub2 = require('passport-github2');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
 var express__default = /*#__PURE__*/_interopDefault(express);
-var session__default = /*#__PURE__*/_interopDefault(session);
-var cookieParser__default = /*#__PURE__*/_interopDefault(cookieParser);
 var axios__default = /*#__PURE__*/_interopDefault(axios);
-var passport__default = /*#__PURE__*/_interopDefault(passport);
 
 const query = `
 query {
@@ -123,45 +116,11 @@ function _async_to_generator(fn) {
         });
     };
 }
+const accessToken = process.env.GITHUB_ACCESS_TOKEN;
 const app = express__default.default();
-app.use(session__default.default({
-    secret: process.env.EXPRESS_SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-}));
-app.use(cookieParser__default.default());
-app.use(passport__default.default.initialize());
-app.use(passport__default.default.session());
-passport__default.default.serializeUser(function(user, done) {
-    done(null, user);
-});
-passport__default.default.deserializeUser(function(obj, done) {
-    done(null, obj);
-});
-passport__default.default.use(new passportGithub2.Strategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: '/api/auth/github/callback'
-}, (accessToken, _refreshToken, profile, done)=>{
-    profile.accessToken = accessToken;
-    done(null, profile);
-}));
-app.get('/api/auth/github', passport__default.default.authenticate('github', {
-    scope: [
-        'user:email',
-        'repo:public_repo'
-    ]
-}));
-app.get('/api/auth/github/callback', passport__default.default.authenticate('github', {
-    failureRedirect: '/'
-}), function(req, res) {
-    const accessToken = req.user.accessToken;
-    res.cookie('accessToken', accessToken);
-});
-app.get('/api', /*#__PURE__*/ _async_to_generator(function*(req, res) {
-    const accessToken = req.cookies.accessToken;
+app.get('/', /*#__PURE__*/ _async_to_generator(function*(_req, res) {
     if (!accessToken) {
-        res.redirect('/api/auth/github');
+        res.redirect('/no-access-token');
         return;
     }
     try {
@@ -182,6 +141,12 @@ app.get('/api', /*#__PURE__*/ _async_to_generator(function*(req, res) {
         });
     }
 }));
+app.get('/no-access-token', (_req, res)=>{
+    res.status(401).json({
+        error: 'Missing access token',
+        message: 'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env'
+    });
+});
 app.listen({
     port: 8000
 });
