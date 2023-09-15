@@ -6,7 +6,7 @@ const accessToken = process.env.GITHUB_ACCESS_TOKEN
 
 const app = express()
 
-app.get('/', async (_req, res) => {
+app.get('/api', async (_req, res) => {
   if (!accessToken) {
     res.redirect('/no-access-token')
     return
@@ -30,7 +30,7 @@ app.get('/', async (_req, res) => {
   }
 })
 
-app.get('/no-access-token', (_req, res) => {
+app.get('/api/no-access-token', (_req, res) => {
   res.status(401).json({
     error: 'Missing access token',
     message:
