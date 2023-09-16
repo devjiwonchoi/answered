@@ -30,7 +30,7 @@ export function generateHTMLString({
     })
     .join('')
 
-  const svg = `<div class="github-card">
+  const htmlString = `<div class="github-card">
   <h2>Answered GitHub Discussions</h2>
   <p>Username: @${username}</p>
   <p>Total Count: ${totalCount}</p>
@@ -63,7 +63,7 @@ export function generateHTMLString({
   }
 </style>`
 
-  return svg
+  return htmlString
 }
 
 export function handleData(data: any) {

@@ -23,10 +23,11 @@ app.get('/api', async (_req, res) => {
     )
     const data = handleData(response.data)
     const htmlString = generateHTMLString(data)
+
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
     res.send(htmlString)
-  } catch (error) {
-    res.json({ error })
+  } catch (error: any) {
+    res.json({ message: error.message })
   }
 })
 
