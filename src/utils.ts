@@ -12,7 +12,7 @@ query {
 }
 `
 
-export function generateHTMLString({
+export function generateSVGString({
   username,
   totalCount,
   countPerRepo,
@@ -25,45 +25,25 @@ export function generateHTMLString({
 
   // Generate the HTML for the repo counts
   const repoCountsHTML = repoCounts
-    .map(([repo, count]) => {
-      return `<p>${repo}: ${count}</p>`
+    .map(([repo, count], index) => {
+      const yPosition = 120 + index * 20
+      return `<text x="10" y="${yPosition}" font-size="14px">${repo}: ${count}</text>`
     })
     .join('')
 
-  const htmlString = `<div class="github-card">
-  <h2>Answered GitHub Discussions</h2>
-  <p>Username: @${username}</p>
-  <p>Total Count: ${totalCount}</p>
-  <div class="repo-counts">
-      ${repoCountsHTML}
-    </div>
-</div>
-<style>
-.github-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  width: 300px;
-  margin: 20px;
-}
+  const svgString = `
+  <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="100%" height="100%" fill="#fff"/>
+    <g>
+        <text x="10" y="30" font-size="18px">Answered GitHub Discussions</text>
+        <text x="10" y="60" font-size="14px">Username: @${username}</text>
+        <text x="10" y="90" font-size="14px">Total Count: ${totalCount}</text>
+        ${repoCountsHTML}
+    </g>
+  </svg>
+`
 
-.github-card h2 {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-.github-card p {
-  font-size: 14px;
-  margin: 8px 0;
-}
-.repo-counts {
-    margin-top: 10px;
-  }
-</style>`
-
-  return htmlString
+  return svgString
 }
 
 export function handleData(data: any) {

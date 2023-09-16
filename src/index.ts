@@ -1,6 +1,6 @@
 import express, { type Express } from 'express'
 import axios from 'axios'
-import { handleData, query, generateHTMLString } from './utils'
+import { handleData, query, generateSVGString } from './utils'
 
 const accessToken = process.env.GITHUB_ACCESS_TOKEN
 
@@ -22,10 +22,10 @@ app.get('/api', async (_req, res) => {
       }
     )
     const data = handleData(response.data)
-    const htmlString = generateHTMLString(data)
+    const svgString = generateSVGString(data)
 
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
-    res.send(htmlString)
+    res.send(svgString)
   } catch (error: any) {
     res.json({ message: error.message })
   }

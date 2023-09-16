@@ -21,45 +21,25 @@ query {
   }
 }
 `;
-function generateHTMLString({ username, totalCount, countPerRepo }) {
+function generateSVGString({ username, totalCount, countPerRepo }) {
     const repoCounts = Object.entries(countPerRepo).sort((a, b)=>b[1] - a[1]);
     // Generate the HTML for the repo counts
-    const repoCountsHTML = repoCounts.map(([repo, count])=>{
-        return `<p>${repo}: ${count}</p>`;
+    const repoCountsHTML = repoCounts.map(([repo, count], index)=>{
+        const yPosition = 120 + index * 20;
+        return `<text x="10" y="${yPosition}" font-size="14px">${repo}: ${count}</text>`;
     }).join('');
-    const svg = `<div class="github-card">
-  <h2>Answered GitHub Discussions</h2>
-  <p>Username: @${username}</p>
-  <p>Total Count: ${totalCount}</p>
-  <div class="repo-counts">
-      ${repoCountsHTML}
-    </div>
-</div>
-<style>
-.github-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  width: 300px;
-  margin: 20px;
-}
-
-.github-card h2 {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-.github-card p {
-  font-size: 14px;
-  margin: 8px 0;
-}
-.repo-counts {
-    margin-top: 10px;
-  }
-</style>`;
-    return svg;
+    const svgString = `
+  <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="100%" height="100%" fill="#fff"/>
+    <g>
+        <text x="10" y="30" font-size="18px">Answered GitHub Discussions</text>
+        <text x="10" y="60" font-size="14px">Username: @${username}</text>
+        <text x="10" y="90" font-size="14px">Total Count: ${totalCount}</text>
+        ${repoCountsHTML}
+    </g>
+  </svg>
+`;
+    return svgString;
 }
 function handleData(data) {
     const { data: { viewer } } = data;
@@ -118,43 +98,35 @@ function _async_to_generator(fn) {
 }
 const accessToken = process.env.GITHUB_ACCESS_TOKEN;
 const app = express__default.default();
-app.get(
-  '/api',
-  /*#__PURE__*/ _async_to_generator(function* (_req, res) {
+app.get('/api', /*#__PURE__*/ _async_to_generator(function*(_req, res) {
     if (!accessToken) {
-      res.redirect('/no-access-token')
-      return
+        res.redirect('/no-access-token');
+        return;
     }
     try {
-      const response = yield axios__default.default.post(
-        'https://api.github.com/graphql',
-        {
-          query,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      )
-      const data = handleData(response.data)
-      const htmlString = generateHTMLString(data)
-      res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
-      res.send(htmlString)
+        const response = yield axios__default.default.post('https://api.github.com/graphql', {
+            query
+        }, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const data = handleData(response.data);
+        const svgString = generateSVGString(data);
+        res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+        res.send(svgString);
     } catch (error) {
-      res.json({
-        error,
-      })
+        res.json({
+            message: error.message
+        });
     }
-  })
-)
-app.get('/api/no-access-token', (_req, res) => {
-  res.status(401).json({
-    error: 'Missing access token',
-    message:
-      'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env',
-  })
-})
+}));
+app.get('/api/no-access-token', (_req, res)=>{
+    res.status(401).json({
+        error: 'Missing access token',
+        message: 'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env'
+    });
+});
 app.listen({
     port: 8000
 });
