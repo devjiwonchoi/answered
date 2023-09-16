@@ -113,6 +113,7 @@ app.get('/api', /*#__PURE__*/ _async_to_generator(function*(_req, res) {
         });
         const data = handleData(response.data);
         const svgString = generateSVGString(data);
+        res.setHeader('Content-Type', 'image/svg+xml');
         res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
         res.send(svgString);
     } catch (error) {
