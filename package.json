@@ -4,7 +4,7 @@
   "description": "A slight show-off for the dedicated ones",
   "scripts": {
     "dev": "dotenv -e .env ts-node api/index.ts",
-    "build": "bunchee ./api/index.ts -f cjs -o ./dist/index.js",
+    "build:api": "bunchee ./api/index.ts -f cjs -o ./dist/index.js",
     "start": "dotenv -e .env node dist/index.js"
   },
   "dependencies": {
