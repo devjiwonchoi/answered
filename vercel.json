@@ -1,8 +1,8 @@
 {
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "source": "/",
+      "destination": "https://github.com/devjiwonchoi/answered"
     }
   ]
 }

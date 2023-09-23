@@ -1,3 +1,5 @@
+import { GITHUB_ACCESS_TOKEN, GITHUB_GRAPHQL_API } from './constants'
+
 export const query = `
   query userInfo($login: String!) {
     user(login: $login) {
@@ -196,15 +198,14 @@ export function generateSVGString({
   return test
 }
 
-export function handleData(data: any) {
+export function handleData({ data }: { data: Record<string, any> }) {
   const {
-    data: { user },
+    user: {
+      name,
+      login,
+      repositoryDiscussionComments: { totalCount, nodes },
+    },
   } = data
-  const {
-    name,
-    login,
-    repositoryDiscussionComments: { totalCount, nodes },
-  } = user
 
   let urls: string[] = []
 
@@ -227,4 +228,22 @@ export function handleData(data: any) {
     countPerRepo,
     urls,
   }
+}
+
+export async function fetcher({
+  query,
+  variables,
+}: {
+  query: string
+  variables: Record<string, string>
+}) {
+  const response = await fetch(GITHUB_GRAPHQL_API, {
+    headers: {
+      Authorization: `Bearer ${GITHUB_ACCESS_TOKEN}`,
+    },
+    method: 'POST',
+    body: JSON.stringify({ query, variables }),
+  })
+
+  return await response.json()
 }
