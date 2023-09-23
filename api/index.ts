@@ -12,14 +12,15 @@ const app = express()
 app.get('/api', async (req: Request, res: Response) => {
   if (!GITHUB_ACCESS_TOKEN) return res.redirect('/api/invalid-access-token')
 
-  const { username } = req.query
+  const { username, json } = req.query
   if (!username) return InvalidUsernameResponse(res)
 
   const variables = { login: username as string }
   try {
     const data = handleData(await fetcher({ query, variables }))
-    const svgString = generateSVGString(data)
+    if (json) return res.json(data)
 
+    const svgString = generateSVGString(data)
     res
       .setHeader('Content-Type', 'image/svg+xml')
       .setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
