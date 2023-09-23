@@ -9,17 +9,18 @@ var express__default = /*#__PURE__*/_interopDefault(express);
 var axios__default = /*#__PURE__*/_interopDefault(axios);
 
 const query = `
-query {
-  viewer {
-    login
-    repositoryDiscussionComments(onlyAnswers: true, first:100) {
-      totalCount
-      nodes {
-        url
+  query userInfo($login: String!) {
+    user(login: $login) {
+      name
+      login
+      repositoryDiscussionComments(onlyAnswers: true, first:100) {
+        totalCount
+        nodes {
+          url
+        }
       }
     }
   }
-}
 `;
 function calculateRank(totalCount) {
     if (totalCount === 100) {
@@ -189,8 +190,8 @@ function generateSVGString({ username, totalCount, countPerRepo }) {
     return test;
 }
 function handleData(data) {
-    const { data: { viewer } } = data;
-    const { login, repositoryDiscussionComments: { totalCount, nodes } } = viewer;
+    const { data: { user } } = data;
+    const { name, login, repositoryDiscussionComments: { totalCount, nodes } } = user;
     let urls = [];
     const regexForRepo = /github\.com\/([^/]+)\/([^/]+)/;
     const countPerRepo = nodes.reduce((accumulator, node)=>{
@@ -207,6 +208,7 @@ function handleData(data) {
         return accumulator;
     }, {});
     return {
+        name,
         username: login,
         totalCount,
         countPerRepo,
@@ -245,14 +247,16 @@ function _async_to_generator(fn) {
 }
 const accessToken = process.env.GITHUB_ACCESS_TOKEN;
 const app = express__default.default();
-app.get('/api', /*#__PURE__*/ _async_to_generator(function*(_req, res) {
-    if (!accessToken) {
-        res.redirect('/no-access-token');
-        return;
-    }
+app.get('/api', /*#__PURE__*/ _async_to_generator(function*(req, res) {
+    if (!accessToken) res.redirect('/api/invalid-access-token');
+    const { username } = req.query;
+    const variables = {
+        login: username
+    };
     try {
         const response = yield axios__default.default.post('https://api.github.com/graphql', {
-            query
+            query,
+            variables
         }, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
@@ -269,10 +273,10 @@ app.get('/api', /*#__PURE__*/ _async_to_generator(function*(_req, res) {
         });
     }
 }));
-app.get('/api/no-access-token', (_req, res)=>{
+app.get('api/invalid-access-token', (req, res)=>{
     res.status(401).json({
-        error: 'Missing access token',
-        message: 'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env'
+        error: 'Invalid access token',
+        message: 'Please set the valid GITHUB_ACCESS_TOKEN env variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env'
     });
 });
 app.listen({
