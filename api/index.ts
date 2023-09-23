@@ -1,5 +1,5 @@
 import express, { type Express } from 'express'
-import { handleData, query, generateSVGString } from './utils'
+import { handleData, query, generateSVGString } from '@/utils'
 
 const accessToken = process.env.GITHUB_ACCESS_TOKEN
 
