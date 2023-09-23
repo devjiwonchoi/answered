@@ -1,4 +1,5 @@
-import express, { type Express } from 'express'
+import express from 'express'
+import type { Express, Request, Response } from 'express'
 import { GITHUB_ACCESS_TOKEN } from '../src/constants'
 import {
   InvalidAccessTokenResponse,
@@ -8,7 +9,7 @@ import { handleData, query, generateSVGString, fetcher } from '../src/utils'
 
 const app = express()
 
-app.get('/api', async (req, res) => {
+app.get('/api', async (req: Request, res: Response) => {
   if (!GITHUB_ACCESS_TOKEN) return res.redirect('/api/invalid-access-token')
 
   const { username } = req.query
@@ -28,7 +29,7 @@ app.get('/api', async (req, res) => {
   }
 })
 
-app.get('/api/invalid-access-token', (_req, res) =>
+app.get('/api/invalid-access-token', (_req: Request, res: Response) =>
   InvalidAccessTokenResponse(res)
 )
 
