@@ -1,15 +1,16 @@
 export const query = `
-query {
-  viewer {
-    login
-    repositoryDiscussionComments(onlyAnswers: true, first:100) {
-      totalCount
-      nodes {
-        url
+  query userInfo($login: String!) {
+    user(login: $login) {
+      name
+      login
+      repositoryDiscussionComments(onlyAnswers: true, first:100) {
+        totalCount
+        nodes {
+          url
+        }
       }
     }
   }
-}
 `
 
 export function calculateRank(totalCount: number) {
@@ -197,12 +198,13 @@ export function generateSVGString({
 
 export function handleData(data: any) {
   const {
-    data: { viewer },
+    data: { user },
   } = data
   const {
+    name,
     login,
     repositoryDiscussionComments: { totalCount, nodes },
-  } = viewer
+  } = user
 
   let urls: string[] = []
 
@@ -219,6 +221,7 @@ export function handleData(data: any) {
   }, {})
 
   return {
+    name,
     username: login,
     totalCount,
     countPerRepo,

@@ -6,15 +6,15 @@ const accessToken = process.env.GITHUB_ACCESS_TOKEN
 
 const app = express()
 
-app.get('/api', async (_req, res) => {
-  if (!accessToken) {
-    res.redirect('/no-access-token')
-    return
-  }
+app.get('/api', async (req, res) => {
+  if (!accessToken) res.redirect('/api/invalid-access-token')
+
+  const { username } = req.query
+  const variables = { login: username }
   try {
     const response = await axios.post(
       'https://api.github.com/graphql',
-      { query },
+      { query, variables },
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -32,11 +32,11 @@ app.get('/api', async (_req, res) => {
   }
 })
 
-app.get('/api/no-access-token', (_req, res) => {
+app.get('api/invalid-access-token', (req, res) => {
   res.status(401).json({
-    error: 'Missing access token',
+    error: 'Invalid access token',
     message:
-      'Please set the valid GITHUB_ACCESS_TOKEN environment variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env',
+      'Please set the valid GITHUB_ACCESS_TOKEN env variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env',
   })
 })
 
