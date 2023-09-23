@@ -1,12 +1,10 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var express = require('express');
-var axios = require('axios');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
 var express__default = /*#__PURE__*/_interopDefault(express);
-var axios__default = /*#__PURE__*/_interopDefault(axios);
 
 const query = `
   query userInfo($login: String!) {
@@ -254,16 +252,19 @@ app.get('/api', /*#__PURE__*/ _async_to_generator(function*(req, res) {
         login: username
     };
     try {
-        const response = yield axios__default.default.post('https://api.github.com/graphql', {
-            query,
-            variables
-        }, {
+        const response = yield fetch('https://api.github.com/graphql', {
             headers: {
                 Authorization: `Bearer ${accessToken}`
-            }
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                query,
+                variables
+            })
         });
-        const data = handleData(response.data);
-        const svgString = generateSVGString(data);
+        const data = yield response.json();
+        const resolvedData = handleData(data);
+        const svgString = generateSVGString(resolvedData);
         res.setHeader('Content-Type', 'image/svg+xml');
         res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
         res.send(svgString);
@@ -273,7 +274,7 @@ app.get('/api', /*#__PURE__*/ _async_to_generator(function*(req, res) {
         });
     }
 }));
-app.get('api/invalid-access-token', (req, res)=>{
+app.get('/api/invalid-access-token', (req, res)=>{
     res.status(401).json({
         error: 'Invalid access token',
         message: 'Please set the valid GITHUB_ACCESS_TOKEN env variable. For more information, please visit https://github.com/devjiwonchoi/answered?tab=readme-ov-file#env'
