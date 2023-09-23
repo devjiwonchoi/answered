@@ -35,7 +35,7 @@ app.get('/api/invalid-access-token', (_req: Request, res: Response) =>
 )
 
 app.listen({ port: 8000 }, () => {
-  console.log('Server is running on http://localhost:8000')
+  console.log('http://localhost:8000/api?username=devjiwonchoi')
 })
 
 export default app as Express
