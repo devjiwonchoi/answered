@@ -1,11 +1,11 @@
-import express, { type Express } from 'express'
+import express, { type Express, Request, Response } from 'express'
 import { handleData, query, generateSVGString } from '../src/utils'
 
 const accessToken = process.env.GITHUB_ACCESS_TOKEN
 
 const app = express()
 
-app.get('/api', async (req, res) => {
+app.get('/api', async (req: Request, res: Response) => {
   if (!accessToken) res.redirect('/api/invalid-access-token')
 
   const { username } = req.query
@@ -30,7 +30,7 @@ app.get('/api', async (req, res) => {
   }
 })
 
-app.get('/api/invalid-access-token', (req, res) => {
+app.get('/api/invalid-access-token', (_req: Request, res: Response) => {
   res.status(401).json({
     error: 'Invalid access token',
     message:
