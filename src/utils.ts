@@ -75,6 +75,7 @@ export function generateSVGString({
 
   const rank = calculateRank(totalCount)
 
+  // TODO: Componentize this
   const test = `
 <svg xmlns="http://www.w3.org/2000/svg" width="450" height="195" viewBox="0 0 450 195" fill="none" role="img" aria-labelledby="descId">
   <title id="titleId">@${username}'s Answered GitHub Discussions, Rank: ${rank}</title>
@@ -223,12 +224,18 @@ export async function handleData({ data }: { data: Record<string, any> }) {
   while (shouldFetch) {
     const variables = { login: login as string, cursor }
     const newData = await fetcher({ query, variables })
-    const additionalNodes = newData.data.user.repositoryDiscussionComments.nodes
-    nodeArray = [...nodeArray, ...additionalNodes]
+    const {
+      user: {
+        repositoryDiscussionComments: {
+          nodes,
+          pageInfo: { hasNextPage, endCursor },
+        },
+      },
+    } = newData.data
 
-    cursor = newData.data.user.repositoryDiscussionComments.pageInfo.endCursor
-    shouldFetch =
-      newData.data.user.repositoryDiscussionComments.pageInfo.hasNextPage
+    nodeArray = [...nodeArray, ...nodes]
+    cursor = endCursor
+    shouldFetch = hasNextPage
   }
 
   const regexForRepo = /github\.com\/([^/]+)\/([^/]+)/
