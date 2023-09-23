@@ -1,36 +1,29 @@
-import express, { type Express, Request, Response } from 'express'
-import { handleData, query, generateSVGString } from '../src/utils'
-
-const accessToken = process.env.GITHUB_ACCESS_TOKEN
+import express, { type Express } from 'express'
+import { GITHUB_ACCESS_TOKEN } from '../src/constants'
+import { handleData, query, generateSVGString, fetcher } from '../src/utils'
 
 const app = express()
 
-app.get('/api', async (req: Request, res: Response) => {
-  if (!accessToken) res.redirect('/api/invalid-access-token')
+app.get('/api', async (req, res) => {
+  if (!GITHUB_ACCESS_TOKEN) res.redirect('/api/invalid-access-token')
 
   const { username } = req.query
-  const variables = { login: username }
+  const variables = { login: username as string }
+
   try {
-    const response = await fetch('https://api.github.com/graphql', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      method: 'POST',
-      body: JSON.stringify({ query, variables }),
-    })
-    const data = await response.json()
+    const data = await fetcher({ query, variables })
     const resolvedData = handleData(data)
     const svgString = generateSVGString(resolvedData)
-
-    res.setHeader('Content-Type', 'image/svg+xml')
-    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
-    res.send(svgString)
+    res
+      .setHeader('Content-Type', 'image/svg+xml')
+      .setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
+      .send(svgString)
   } catch (error: any) {
     res.json({ message: error.message })
   }
 })
 
-app.get('/api/invalid-access-token', (_req: Request, res: Response) => {
+app.get('/api/invalid-access-token', (_req, res) => {
   res.status(401).json({
     error: 'Invalid access token',
     message:
