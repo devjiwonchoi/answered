@@ -1,14 +1,18 @@
 import { GITHUB_ACCESS_TOKEN, GITHUB_GRAPHQL_API } from './constants'
 
 export const query = `
-  query userInfo($login: String!) {
+  query userInfo($login: String!, $cursor: String) {
     user(login: $login) {
       name
       login
-      repositoryDiscussionComments(onlyAnswers: true, first:100) {
+      repositoryDiscussionComments(onlyAnswers: true, first:100, after: $cursor) {
         totalCount
         nodes {
           url
+        }
+        pageInfo { 
+          hasNextPage
+          endCursor
         }
       }
     }
@@ -16,7 +20,7 @@ export const query = `
 `
 
 export function calculateRank(totalCount: number) {
-  if (totalCount === 100) {
+  if (totalCount >= 100) {
     return 'S+'
   } else if (totalCount >= 90) {
     return 'S'
@@ -71,6 +75,7 @@ export function generateSVGString({
 
   const rank = calculateRank(totalCount)
 
+  // TODO: Componentize this
   const test = `
 <svg xmlns="http://www.w3.org/2000/svg" width="450" height="195" viewBox="0 0 450 195" fill="none" role="img" aria-labelledby="descId">
   <title id="titleId">@${username}'s Answered GitHub Discussions, Rank: ${rank}</title>
@@ -198,19 +203,43 @@ export function generateSVGString({
   return test
 }
 
-export function handleData({ data }: { data: Record<string, any> }) {
+export async function handleData({ data }: { data: Record<string, any> }) {
   const {
     user: {
-      name,
       login,
-      repositoryDiscussionComments: { totalCount, nodes },
+      name,
+      repositoryDiscussionComments: {
+        totalCount,
+        nodes,
+        pageInfo: { hasNextPage, endCursor },
+      },
     },
   } = data
 
   let urls: string[] = []
+  let nodeArray = [...nodes]
+  let cursor = endCursor
+  let shouldFetch = hasNextPage
+
+  while (shouldFetch) {
+    const variables = { login: login as string, cursor }
+    const newData = await fetcher({ query, variables })
+    const {
+      user: {
+        repositoryDiscussionComments: {
+          nodes,
+          pageInfo: { hasNextPage, endCursor },
+        },
+      },
+    } = newData.data
+
+    nodeArray = [...nodeArray, ...nodes]
+    cursor = endCursor
+    shouldFetch = hasNextPage
+  }
 
   const regexForRepo = /github\.com\/([^/]+)\/([^/]+)/
-  const countPerRepo = nodes.reduce((accumulator: any, node: any) => {
+  const countPerRepo = nodeArray.reduce((accumulator: any, node: any) => {
     urls = [...urls, node.url]
     const match = node.url.match(regexForRepo)
     if (match) {
