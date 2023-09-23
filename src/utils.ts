@@ -1,14 +1,18 @@
 import { GITHUB_ACCESS_TOKEN, GITHUB_GRAPHQL_API } from './constants'
 
 export const query = `
-  query userInfo($login: String!) {
+  query userInfo($login: String!, $cursor: String) {
     user(login: $login) {
       name
       login
-      repositoryDiscussionComments(onlyAnswers: true, first:100) {
+      repositoryDiscussionComments(onlyAnswers: true, first:100, after: $cursor) {
         totalCount
         nodes {
           url
+        }
+        pageInfo { 
+          hasNextPage
+          endCursor
         }
       }
     }
@@ -198,19 +202,37 @@ export function generateSVGString({
   return test
 }
 
-export function handleData({ data }: { data: Record<string, any> }) {
+export async function handleData({ data }: { data: Record<string, any> }) {
   const {
     user: {
-      name,
       login,
-      repositoryDiscussionComments: { totalCount, nodes },
+      name,
+      repositoryDiscussionComments: {
+        totalCount,
+        nodes,
+        pageInfo: { hasNextPage, endCursor },
+      },
     },
   } = data
 
   let urls: string[] = []
+  let nodeArray = [...nodes]
+  let cursor = endCursor
+  let shouldFetch = hasNextPage
+
+  while (shouldFetch) {
+    const variables = { login: login as string, cursor }
+    const newData = await fetcher({ query, variables })
+    const additionalNodes = newData.data.user.repositoryDiscussionComments.nodes
+    nodeArray = [...nodeArray, ...additionalNodes]
+
+    cursor = newData.data.user.repositoryDiscussionComments.pageInfo.endCursor
+    shouldFetch =
+      newData.data.user.repositoryDiscussionComments.pageInfo.hasNextPage
+  }
 
   const regexForRepo = /github\.com\/([^/]+)\/([^/]+)/
-  const countPerRepo = nodes.reduce((accumulator: any, node: any) => {
+  const countPerRepo = nodeArray.reduce((accumulator: any, node: any) => {
     urls = [...urls, node.url]
     const match = node.url.match(regexForRepo)
     if (match) {

@@ -17,7 +17,7 @@ app.get('/api', async (req: Request, res: Response) => {
 
   const variables = { login: username as string }
   try {
-    const data = handleData(await fetcher({ query, variables }))
+    const data = await handleData(await fetcher({ query, variables }))
     if (json) return res.json(data)
 
     const svgString = generateSVGString(data)
