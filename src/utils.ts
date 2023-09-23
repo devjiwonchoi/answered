@@ -20,7 +20,7 @@ export const query = `
 `
 
 export function calculateRank(totalCount: number) {
-  if (totalCount === 100) {
+  if (totalCount >= 100) {
     return 'S+'
   } else if (totalCount >= 90) {
     return 'S'
