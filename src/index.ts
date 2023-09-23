@@ -1,5 +1,4 @@
 import express, { type Express } from 'express'
-import axios from 'axios'
 import { handleData, query, generateSVGString } from './utils'
 
 const accessToken = process.env.GITHUB_ACCESS_TOKEN
@@ -12,17 +11,16 @@ app.get('/api', async (req, res) => {
   const { username } = req.query
   const variables = { login: username }
   try {
-    const response = await axios.post(
-      'https://api.github.com/graphql',
-      { query, variables },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    )
-    const data = handleData(response.data)
-    const svgString = generateSVGString(data)
+    const response = await fetch('https://api.github.com/graphql', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: 'POST',
+      body: JSON.stringify({ query, variables }),
+    })
+    const data = await response.json()
+    const resolvedData = handleData(data)
+    const svgString = generateSVGString(resolvedData)
 
     res.setHeader('Content-Type', 'image/svg+xml')
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate')
@@ -32,7 +30,7 @@ app.get('/api', async (req, res) => {
   }
 })
 
-app.get('api/invalid-access-token', (req, res) => {
+app.get('/api/invalid-access-token', (req, res) => {
   res.status(401).json({
     error: 'Invalid access token',
     message:
